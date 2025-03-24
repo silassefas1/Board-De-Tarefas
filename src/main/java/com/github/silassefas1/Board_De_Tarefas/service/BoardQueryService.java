@@ -23,6 +23,7 @@ public class BoardQueryService {
             entity.setBoardColumn(boardColumnDAO.findByBoardId(entity.getId()));
             return Optional.of(entity);
         }
+        return Optional.empty();
     }
 
 }
