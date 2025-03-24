@@ -1,6 +1,7 @@
 package com.github.silassefas1.Board_De_Tarefas;
 
 import com.github.silassefas1.Board_De_Tarefas.persistence.migration.MigrationStrategy;
+import com.github.silassefas1.Board_De_Tarefas.ui.MainMenu;
 
 import java.sql.SQLException;
 
@@ -13,6 +14,7 @@ public class Main {
         try(var connection = getConnection()){
             new MigrationStrategy(connection).executeMigration();
         }
+        new MainMenu().execute();
     }
 
 }
