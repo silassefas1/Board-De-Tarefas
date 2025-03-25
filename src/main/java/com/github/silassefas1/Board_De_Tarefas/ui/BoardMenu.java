@@ -4,6 +4,7 @@ import com.github.silassefas1.Board_De_Tarefas.persistence.entity.BoardColumnEnt
 import com.github.silassefas1.Board_De_Tarefas.persistence.entity.BoardEntity;
 import com.github.silassefas1.Board_De_Tarefas.service.BoardColumnQueryService;
 import com.github.silassefas1.Board_De_Tarefas.service.BoardQueryService;
+import com.github.silassefas1.Board_De_Tarefas.service.CardQueryService;
 import lombok.AllArgsConstructor;
 
 import java.sql.SQLException;
@@ -101,7 +102,21 @@ public class BoardMenu {
         }
     }
 
-    private void showCard() {
+    private void showCard() throws SQLException {
+        System.out.println("Informe o id do card que deseja visualizar ");
+        var selectedCardId = scanner.nextLong();
+        try(var connection = getConnection()){
+            new CardQueryService(connection).findById(selectedCardId)
+                    .ifPresentOrElse(
+                    card ->{
+                        System.out.printf("Card id: %s - %s\n",card.id(),card.title());
+                        System.out.printf("Descrição: %s\n", card.description());
+                        System.out.printf("Esta bloqueado? %s\n",card.blocked() + "Motivo: %s\n", card.blockReason());
+                        System.out.printf("Bloqueado %s vezes\n", card.blockAmount() );
+                        System.out.printf("Está no momento na coluna: %s - %s\n",card.columnId(),card.columnName());
+                    },
+                    ()->System.out.printf("Não existe um card com o id %s\n", selectedCardId));
+        }
         
     }
 }
