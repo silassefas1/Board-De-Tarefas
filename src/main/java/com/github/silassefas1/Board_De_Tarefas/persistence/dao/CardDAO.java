@@ -7,7 +7,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Optional;
 
-import static com.github.silassefas1.Board_De_Tarefas.persistence.OffsetDateTimeConverter.toOffSetDateTime;
+import static com.github.silassefas1.Board_De_Tarefas.persistence.converter.OffsetDateTimeConverter.toOffSetDateTime;
+import static java.util.Objects.nonNull;
 
 @AllArgsConstructor
 public class CardDAO {
@@ -23,7 +24,7 @@ public class CardDAO {
                     block.blocked_reason,
                     card.board_column_id,
                     boardcolumn.name,
-                    COUNT(SELECT sub_block.id
+                    (SELECT COUNT(sub_block.id)
                             FROM BLOCKS sub_block
                         WHERE sub_block.card.id = card.id) blocks_amount
                 FROM CARDS card
@@ -44,7 +45,7 @@ public class CardDAO {
                         resultSet.getLong("card_id"),
                         resultSet.getString("card.title"),
                         resultSet.getString("card.desciption"),
-                        resultSet.getString("block.blocked_reason").isEmpty(),
+                        nonNull(resultSet.getString("block.blocked_reason")),
                         toOffSetDateTime(resultSet.getTimestamp("block.blocked_at,")),
                         resultSet.getString("block.blocked_reason"),
                         resultSet.getInt("blocks_amount"),

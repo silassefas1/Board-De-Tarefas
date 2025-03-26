@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.github.silassefas1.Board_De_Tarefas.persistence.entity.enums.BoardColumnKindEnum.findByName;
+import static java.util.Objects.isNull;
 
 @AllArgsConstructor
 public class BoardColumnDAO {
@@ -63,12 +64,12 @@ public class BoardColumnDAO {
                 SELECT bc.id,
                         bc.name,
                         bc.kind,
-                        COUNT(SELECT c.id
+                        (SELECT COUNT(c.id)
                             FROM CARDS c
                             WHERE c.board_column_id = bc.id) cards_amount
                     FROM BOARDS_COLUMNS bc
                     WHERE board_id = ?
-                    ORDER BY `order`
+                    ORDER BY `order`;
                 
                 """;
         try (var statement = connection.prepareStatement(sql)) {
@@ -96,30 +97,33 @@ public class BoardColumnDAO {
                         c.title
                         c.description
                     FROM BOARDS_COLUMNS bc
-                    INNE JOIN CARDS c
+                    LEFT JOIN CARDS c
                         ON c. = bc.
                     WHERE bc.id = ?
                 """;
-        try(var statement = connection.prepareStatement(sql)){
-            statement.setLong(1,boardId);
+        try(var statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, boardId);
             statement.executeQuery();
             var resultSet = statement.getResultSet();
             var entity = new BoardColumnEntity();
-            if(resultSet.next()){
+            if (resultSet.next()) {
                 entity.setName(resultSet.getString("bc.name"));
                 entity.setKind(findByName(resultSet.getString("bc.kind")));
                 entities.add(entity);
+
+                do {
+                    if (isNull(resultSet.getString("card.title"))) {
+                        break;
+                    }
+                    var card = new CardEntity();
+                    card.setId(resultSet.getLong("c.id"));
+                    card.setTitle(resultSet.getString("c.title"));
+                    card.setDescription(resultSet.getString("c.description"));
+                    entity.getCards().add(card);
+                } while (resultSet.next());
+                return Optional.of(entity);
             }
-            do{
-                var card = new CardEntity();
-                card.setId(resultSet.getLong("c.id"));
-                card.setTitle(resultSet.getString("c.title"));
-                card.setDescription(resultSet.getString("c.description"));
-                entity.getCards().add(card);
-            }while (resultSet.next());
             return Optional.empty();
-
         }
-
     }
 }
