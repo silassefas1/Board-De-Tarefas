@@ -1,5 +1,6 @@
 package com.github.silassefas1.Board_De_Tarefas.ui;
 
+import com.github.silassefas1.Board_De_Tarefas.dto.BoardColumnInfoDTO;
 import com.github.silassefas1.Board_De_Tarefas.persistence.entity.BoardColumnEntity;
 import com.github.silassefas1.Board_De_Tarefas.persistence.entity.BoardEntity;
 import com.github.silassefas1.Board_De_Tarefas.persistence.entity.CardEntity;
@@ -70,7 +71,16 @@ public class BoardMenu {
 
     }
 
-    private void moveCard() {
+    private void moveCard() throws SQLException {
+        System.out.println("Informe o id do card que deseja mover para a proxima coluna: ");
+        var cardId = scanner.nextLong();
+        var boardColumnsInfo = entity.getBoardColumn().stream()
+                .map(boardColum ->
+                        new BoardColumnInfoDTO(boardColum.getId(),boardColum.getOrder(),boardColum.getKind()))
+                .toList();
+        try(var connection = getConnection()){
+            new CardService(connection).moveToNexColumn(cardId,boardColumnsInfo);
+        }
     }
 
     private void blockCard() {
@@ -125,7 +135,7 @@ public class BoardMenu {
                     card ->{
                         System.out.printf("Card id: %s - %s\n",card.id(),card.title());
                         System.out.printf("Descrição: %s\n", card.description());
-                        System.out.printf("Esta bloqueado? %s \n Motivo: %s\n",card.blocked(), card.blockReason());
+                        System.out.printf("Esta bloqueado? %s \nMotivo: %s\n",card.blocked(), card.blockReason());
                         System.out.printf("Bloqueado %s vezes\n", card.blockAmount() );
                         System.out.printf("Está no momento na coluna: %s - %s\n",card.columnId(),card.columnName());
                     },
