@@ -9,7 +9,7 @@ CREATE TABLE BLOCKS(
     unblocked_at TIMESTAMP NULL,
     unblocked_reason VARCHAR(255) NOT NULL,
     card_id BIGINT NOT NULL,
-    CONSTRAINT cards__blocks_fk FOREIGN KEY (card_id) REFERENCES BOARDS(id) ON DELETE CASCADE
+    CONSTRAINT cards__blocks_fk FOREIGN KEY (card_id) REFERENCES CARDS(id) ON DELETE CASCADE
 
 ) ENGINE=InnoDB;
 --rollback DROP TABLE BLOCK

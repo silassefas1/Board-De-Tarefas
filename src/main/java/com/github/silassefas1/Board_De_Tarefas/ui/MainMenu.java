@@ -48,8 +48,9 @@ public class MainMenu {
         entity.setName(scanner.next());
 
         System.out.println("Seu Board Tera colunas Alem das 3 padrões? se sim informe quantas, senão digite 0");
+        var aditionalColumn = scanner.nextInt();
         try{
-            var aditionalColumn = scanner.nextInt();
+
             List<BoardColumnEntity> columns = new ArrayList<>();
 
             System.out.println("Informe o nome da coluna inicial do Board: ");
@@ -64,27 +65,27 @@ public class MainMenu {
                     var pendinColumn = createColumn(pendinColumnName, PENDING, i + 1);
                     columns.add(pendinColumn);
                 }
-            }else {
-                System.out.println("Informe o nome da coluna final do Board: ");
-                var finalColumnName = scanner.next();
-                var finalColumn = createColumn(finalColumnName, FINAL, aditionalColumn+1);
-                columns.add(finalColumn);
+            }
+            System.out.println("Informe o nome da coluna final do Board: ");
+            var finalColumnName = scanner.next();
+            var finalColumn = createColumn(finalColumnName, FINAL, aditionalColumn+1);
+            columns.add(finalColumn);
 
-                System.out.println("Informe o nome da coluna cancelemento do Board: ");
-                var cancelColumnName = scanner.next();
-                var cancelColumn = createColumn(cancelColumnName, CANCEL, aditionalColumn+2);
-                columns.add(cancelColumn);
+            System.out.println("Informe o nome da coluna cancelemento do Board: ");
+            var cancelColumnName = scanner.next();
+            var cancelColumn = createColumn(cancelColumnName, CANCEL, aditionalColumn+2);
+            columns.add(cancelColumn);
 
-                entity.setBoardColumn(columns);
-                try(var connection = getConnection()) {
-                    var service = new BoardService(connection);
-                    service.insert(entity);
-                    System.out.printf("Board Criado Com Sucesso, ID: %s", entity.getId());
-                }
+            entity.setBoardColumn(columns);
+            try(var connection = getConnection()) {
+                var service = new BoardService(connection);
+                service.insert(entity);
+                System.out.printf("Board Criado Com Sucesso, ID: %s\n", entity.getId());
+
             }
 
         }catch (InputMismatchException e){
-            throw new InputMismatchException("Por favor Digite um valor valido: ");
+            throw new InputMismatchException("Por favor Digite um valor valido: \n");
         }
     }
 
