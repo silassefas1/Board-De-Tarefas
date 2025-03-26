@@ -91,16 +91,16 @@ public class BoardColumnDAO {
     public Optional<BoardColumnEntity> findById(Long boardId) throws SQLException {
         List<BoardColumnEntity> entities = new ArrayList<>();
         var sql = """
-                SELECT  bc.name,
-                        bc.kind,
-                        c.id
-                        c.title
-                        c.description
-                    FROM BOARDS_COLUMNS bc
-                    LEFT JOIN CARDS c
-                        ON c. = bc.
-                    WHERE bc.id = ?
-                """;
+            SELECT  bc.name,
+                    bc.kind,
+                    c.id,
+                    c.title,
+                    c.description
+                FROM BOARDS_COLUMNS bc
+                LEFT JOIN CARDS c
+                    ON c.board_column_id = bc.id
+                WHERE bc.id = ?
+            """;
         try(var statement = connection.prepareStatement(sql)) {
             statement.setLong(1, boardId);
             statement.executeQuery();
@@ -112,7 +112,7 @@ public class BoardColumnDAO {
                 entities.add(entity);
 
                 do {
-                    if (isNull(resultSet.getString("card.title"))) {
+                    if (isNull(resultSet.getString("c.title"))) {
                         break;
                     }
                     var card = new CardEntity();

@@ -42,6 +42,7 @@ public class MainMenu {
     }
 
     private void createBoard()throws SQLException {
+        scanner.nextLine();
         var entity = new BoardEntity();
         System.out.println("Informe o nome do seu Board");
         entity.setName(scanner.next());
@@ -49,21 +50,21 @@ public class MainMenu {
         System.out.println("Seu Board Tera colunas Alem das 3 padrões? se sim informe quantas, senão digite 0");
         try{
             var aditionalColumn = scanner.nextInt();
-            if(aditionalColumn > 0){
-                List<BoardColumnEntity> columns = new ArrayList<>();
+            List<BoardColumnEntity> columns = new ArrayList<>();
 
-                System.out.println("Informe o nome da coluna inicial do Board: ");
-                var initialColumnName = scanner.next();
-                var intialColumn = createColumn(initialColumnName, INITIAL, 0);
-                columns.add(intialColumn);
+            System.out.println("Informe o nome da coluna inicial do Board: ");
+            var initialColumnName = scanner.next();
+            var intialColumn = createColumn(initialColumnName, INITIAL, 0);
+            columns.add(intialColumn);
 
+            if(aditionalColumn > 0) {
                 for (int i = 0; i < aditionalColumn; i++) {
                     System.out.println("Informe o nome das colunas de tarefas pendentes no Board: ");
                     var pendinColumnName = scanner.next();
-                    var pendinColumn = createColumn(pendinColumnName, PENDING, i+1);
+                    var pendinColumn = createColumn(pendinColumnName, PENDING, i + 1);
                     columns.add(pendinColumn);
                 }
-
+            }else {
                 System.out.println("Informe o nome da coluna final do Board: ");
                 var finalColumnName = scanner.next();
                 var finalColumn = createColumn(finalColumnName, FINAL, aditionalColumn+1);
@@ -78,15 +79,13 @@ public class MainMenu {
                 try(var connection = getConnection()) {
                     var service = new BoardService(connection);
                     service.insert(entity);
-
+                    System.out.printf("Board Criado Com Sucesso, ID: %s", entity.getId());
                 }
             }
-
 
         }catch (InputMismatchException e){
             throw new InputMismatchException("Por favor Digite um valor valido: ");
         }
-
     }
 
     private void selectBoard() throws SQLException {

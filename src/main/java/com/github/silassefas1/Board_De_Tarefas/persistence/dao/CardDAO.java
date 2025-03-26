@@ -1,6 +1,8 @@
 package com.github.silassefas1.Board_De_Tarefas.persistence.dao;
 
 import com.github.silassefas1.Board_De_Tarefas.dto.CardDetailsDTO;
+import com.github.silassefas1.Board_De_Tarefas.persistence.entity.CardEntity;
+import com.mysql.cj.jdbc.StatementImpl;
 import lombok.AllArgsConstructor;
 
 import java.sql.Connection;
@@ -15,42 +17,57 @@ public class CardDAO {
 
     private Connection connection;
 
-    public Optional<CardDetailsDTO> findById(final Long id) throws SQLException {
-        var sql= """
-                SELECT card.id,
-                    card.title,
-                    card.description,
-                    block.blocked_at,
-                    block.blocked_reason,
-                    card.board_column_id,
-                    boardcolumn.name,
-                    (SELECT COUNT(sub_block.id)
-                            FROM BLOCKS sub_block
-                        WHERE sub_block.card.id = card.id) blocks_amount
-                FROM CARDS card
-                LEFT JOIN BLOCKS block
-                    ON card.id = block.cards_id
-                AND block.unblocked_at IS NULL
-                INNER JOIN BOARD_COLUMNS boardcolumn
-                    ON boardcolumn.id = card.board_column_id
-                WHERE id = ?;
-                """;
+    public CardEntity insert(final CardEntity entity) throws SQLException{
+        var sql = "INSERT INTO CARDS (title, description, board_column_id) VALUE (?, ?, ?);";
+        try(var statement = connection.prepareStatement(sql)){
+            var i = 1;
+            statement.setString(i++, entity.getTitle());
+            statement.setString(i++, entity.getDescription());
+            statement.setLong(i, entity.getBoardColumn().getId());
+            statement.executeUpdate();
+            if (statement instanceof StatementImpl impl){
+                entity.setId(impl.getLastInsertID());
+            }
+        }
+        return entity;
+    }
 
+    public Optional<CardDetailsDTO> findById(final Long id) throws SQLException {
+        var sql =
+                """
+                SELECT card.id,
+                       card.title,
+                       card.description,
+                       blocks.blocked_at,
+                       blocks.blocked_reason,
+                       card.board_column_id,
+                       boards_columns.name,
+                       (SELECT COUNT(sub_board.id)
+                               FROM BLOCKS sub_board
+                              WHERE sub_board.card_id = card.id) blocks_amount
+                  FROM CARDS card
+                  LEFT JOIN BLOCKS blocks
+                    ON card.id = blocks.card_id
+                   AND blocks.unblocked_at IS NULL
+                 INNER JOIN BOARDS_COLUMNS boards_columns
+                    ON boards_columns.id = card.board_column_id
+                  WHERE card.id = ?;
+                """;
         try(var statement = connection.prepareStatement(sql)){
             statement.setLong(1, id);
             statement.executeQuery();
             var resultSet = statement.getResultSet();
             if(resultSet.next()){
                 var dto = new CardDetailsDTO(
-                        resultSet.getLong("card_id"),
+                        resultSet.getLong("card.id"),
                         resultSet.getString("card.title"),
-                        resultSet.getString("card.desciption"),
-                        nonNull(resultSet.getString("block.blocked_reason")),
-                        toOffSetDateTime(resultSet.getTimestamp("block.blocked_at,")),
-                        resultSet.getString("block.blocked_reason"),
+                        resultSet.getString("card.description"),
+                        nonNull(resultSet.getString("blocks.blocked_reason")),
+                        toOffSetDateTime(resultSet.getTimestamp("blocks.blocked_at")),
+                        resultSet.getString("blocks.blocked_reason"),
                         resultSet.getInt("blocks_amount"),
                         resultSet.getLong("card.board_column_id"),
-                        resultSet.getString("boardcolumn.name,")
+                        resultSet.getString("boards_columns.name")
                 );
                 return Optional.of(dto);
             }
