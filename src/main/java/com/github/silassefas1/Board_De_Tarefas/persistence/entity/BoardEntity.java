@@ -6,7 +6,9 @@ import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
+import static com.github.silassefas1.Board_De_Tarefas.persistence.entity.enums.BoardColumnKindEnum.CANCEL;
 import static com.github.silassefas1.Board_De_Tarefas.persistence.entity.enums.BoardColumnKindEnum.INITIAL;
 
 @Data
@@ -20,9 +22,15 @@ public class BoardEntity {
     private List<BoardColumnEntity> boardColumn = new ArrayList<>();
 
     public BoardColumnEntity getInitialColumn(){
-        return boardColumn.stream()
-                .filter(bc -> bc.getKind().equals(INITIAL))
-                .findFirst().orElseThrow();
+        return getFilteredColumn(boardColumnc -> boardColumnc.getKind().equals(INITIAL));
+    }
+
+    public BoardColumnEntity getCancelColumn(){
+        return getFilteredColumn(boardColumnc -> boardColumnc.getKind().equals(CANCEL));
+    }
+
+    private BoardColumnEntity getFilteredColumn(Predicate<BoardColumnEntity> filter){
+        return boardColumn.stream().filter(filter).findFirst().orElseThrow();
     }
 
 }

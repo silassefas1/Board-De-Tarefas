@@ -47,7 +47,7 @@ public class CardService {
                             .findFirst()
                             .orElseThrow(() -> new IllegalStateException("O Card Selecionado não pertence a este Board, Impossivel mover."));
             if(currentColumn.kind().equals(FINAL)){
-                throw new CardFinishedException("O card ja foi finalizado! ");
+                throw new CardFinishedException("O card ja foi finalizado e não pode ser alterado.  ");
             }
             var nextColumn = boardColumnsInfo.stream()
                     .filter(bc -> bc.order() == currentColumn.order()+1)
@@ -59,4 +59,36 @@ public class CardService {
             throw new RuntimeException(ex);
         }
     }
+
+    public void cardCancel(final Long cardId, final Long cancelColumId, final List<BoardColumnInfoDTO> boardColumnsInfo) throws SQLException{
+        try{
+            var dao = new CardDAO(connection);
+            var optional = dao.findById(cardId);
+            var dto = optional.orElseThrow(
+                    () -> new EntityNotFoundException("O Card de id %s não foi encontrado."
+                            .formatted(cardId)));
+            if(dto.blocked()){
+                throw new CardBlockedException("O card esta bloqueado e precisa ser desbloqueado para ser movido.");
+            }
+            var currentColumn = boardColumnsInfo.stream()
+                    .filter(boardColum -> boardColum.id().equals(dto.columnId()))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("O Card Selecionado não pertence a este Board, Impossivel mover."));
+            if(currentColumn.kind().equals(FINAL)){
+                throw new CardFinishedException("O card ja foi finalizado! e não pode ser alterado ");
+            }
+            var nextColumn = boardColumnsInfo.stream()
+                    .filter(bc -> bc.order() == currentColumn.order()+1)
+                    .findFirst().orElseThrow(()->new IllegalStateException("O Card esta cancelado"));
+            dao.moveToColumn(cancelColumId, cardId);
+            connection.commit();
+        }catch (SQLException ex) {
+            connection.rollback();
+            throw new RuntimeException(ex);
+        }
+    }
+
+
+
+
 }

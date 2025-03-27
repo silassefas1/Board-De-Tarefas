@@ -80,16 +80,36 @@ public class BoardMenu {
                 .toList();
         try(var connection = getConnection()){
             new CardService(connection).moveToNexColumn(cardId,boardColumnsInfo);
+            System.out.printf("Card %s movido com sucesso!", cardId);
+        }catch (RuntimeException ex){
+            System.out.println(ex.getMessage());
         }
     }
 
-    private void blockCard() {
+    private void blockCard() throws SQLException{
+        System.out.println("Informe o ID do card que será bloqueado: ");
+        var cardId = scanner.nextLong();
+        System.out.println("Informe o motivo do bloqueio do card: ");
+        var reason = scanner.nextLine();
     }
 
-    private void unblockCard() {
+    private void unblockCard() throws SQLException{
     }
 
-    private void cancelCard() {
+    private void cancelCard() throws SQLException{
+        System.out.println("Informe o id do card que deseja cancelar: ");
+        var cardId = scanner.nextLong();
+        var cancelColumn = entity.getCancelColumn();
+        var boardColumnsInfo = entity.getBoardColumn().stream()
+                .map(boardColum ->
+                        new BoardColumnInfoDTO(boardColum.getId(),boardColum.getOrder(),boardColum.getKind()))
+                .toList();
+        try(var connection = getConnection()){
+            new CardService(connection).cardCancel(cardId,cancelColumn.getId(),boardColumnsInfo);
+            System.out.printf("Card %s cancelado com sucesso\n", cardId );
+        }catch (RuntimeException ex){
+            System.out.println(ex.getMessage());
+        }
     }
 
     private void showBoard() throws SQLException{
