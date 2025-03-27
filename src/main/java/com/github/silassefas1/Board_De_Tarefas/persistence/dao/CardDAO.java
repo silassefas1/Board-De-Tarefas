@@ -7,9 +7,11 @@ import lombok.AllArgsConstructor;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 import static com.github.silassefas1.Board_De_Tarefas.persistence.converter.OffsetDateTimeConverter.toOffSetDateTime;
+import static com.github.silassefas1.Board_De_Tarefas.persistence.converter.OffsetDateTimeConverter.toTimeStamp;
 import static java.util.Objects.nonNull;
 
 @AllArgsConstructor
@@ -41,6 +43,19 @@ public class CardDAO {
             statement.executeUpdate();
         }
     }
+
+    public void cardBlock(final String reason, final Long cardId)throws SQLException {
+        var sql = "INSERT INTO BLOCKS (blocked_at, blocked_reason, card_id) VALUES (?, ?, ?);";
+        try(var statement = connection.prepareStatement(sql)){
+            var i = 1;
+            statement.setTimestamp(i ++, toTimeStamp(OffsetDateTime.now()) );
+            statement.setString(i++, reason);
+            statement.setLong(i,cardId);
+            statement.executeUpdate();
+        }
+    }
+
+
 
     public Optional<CardDetailsDTO> findById(final Long id) throws SQLException {
         var sql =

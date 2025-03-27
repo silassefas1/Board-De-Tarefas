@@ -1,5 +1,6 @@
 package com.github.silassefas1.Board_De_Tarefas.persistence.entity;
 
+import com.github.silassefas1.Board_De_Tarefas.dto.BoardColumnInfoDTO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -29,8 +30,17 @@ public class BoardEntity {
         return getFilteredColumn(boardColumnc -> boardColumnc.getKind().equals(CANCEL));
     }
 
+    public List<BoardColumnInfoDTO> boardColumnInfo() {
+        return boardColumn.stream()
+                .map(boardColum ->
+                        new BoardColumnInfoDTO(boardColum.getId(), boardColum.getOrder(), boardColum.getKind()))
+                .toList();
+    }
+
     private BoardColumnEntity getFilteredColumn(Predicate<BoardColumnEntity> filter){
         return boardColumn.stream().filter(filter).findFirst().orElseThrow();
     }
+
+
 
 }

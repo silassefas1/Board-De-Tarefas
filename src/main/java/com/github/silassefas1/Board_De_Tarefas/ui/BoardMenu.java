@@ -1,6 +1,5 @@
 package com.github.silassefas1.Board_De_Tarefas.ui;
 
-import com.github.silassefas1.Board_De_Tarefas.dto.BoardColumnInfoDTO;
 import com.github.silassefas1.Board_De_Tarefas.persistence.entity.BoardColumnEntity;
 import com.github.silassefas1.Board_De_Tarefas.persistence.entity.BoardEntity;
 import com.github.silassefas1.Board_De_Tarefas.persistence.entity.CardEntity;
@@ -38,6 +37,7 @@ public class BoardMenu {
             System.out.println("10 - Sair");
 
             option = scanner.nextInt();
+            scanner.nextLine();
             switch (option){
                 case 1 -> createCard();
                 case 2 -> moveCard();
@@ -57,7 +57,6 @@ public class BoardMenu {
     }
 
     private void createCard() throws SQLException{
-        scanner.nextLine();
         var card = new CardEntity();
         System.out.println("Informe o Titulo do Card: ");
         card.setTitle(scanner.nextLine());
@@ -74,13 +73,10 @@ public class BoardMenu {
     private void moveCard() throws SQLException {
         System.out.println("Informe o id do card que deseja mover para a proxima coluna: ");
         var cardId = scanner.nextLong();
-        var boardColumnsInfo = entity.getBoardColumn().stream()
-                .map(boardColum ->
-                        new BoardColumnInfoDTO(boardColum.getId(),boardColum.getOrder(),boardColum.getKind()))
-                .toList();
+        var boardColumnsInfo = entity.boardColumnInfo();
         try(var connection = getConnection()){
             new CardService(connection).moveToNexColumn(cardId,boardColumnsInfo);
-            System.out.printf("Card %s movido com sucesso!", cardId);
+            System.out.printf("Card %s movido com sucesso!\n", cardId);
         }catch (RuntimeException ex){
             System.out.println(ex.getMessage());
         }
@@ -89,8 +85,13 @@ public class BoardMenu {
     private void blockCard() throws SQLException{
         System.out.println("Informe o ID do card que será bloqueado: ");
         var cardId = scanner.nextLong();
+        scanner.nextLine();
         System.out.println("Informe o motivo do bloqueio do card: ");
         var reason = scanner.nextLine();
+        var boardColumnsInfo = entity.boardColumnInfo();
+        try(var connection = getConnection()){
+            new CardService(connection).cardBlock(reason, cardId,boardColumnsInfo);
+        }
     }
 
     private void unblockCard() throws SQLException{
@@ -100,10 +101,7 @@ public class BoardMenu {
         System.out.println("Informe o id do card que deseja cancelar: ");
         var cardId = scanner.nextLong();
         var cancelColumn = entity.getCancelColumn();
-        var boardColumnsInfo = entity.getBoardColumn().stream()
-                .map(boardColum ->
-                        new BoardColumnInfoDTO(boardColum.getId(),boardColum.getOrder(),boardColum.getKind()))
-                .toList();
+        var boardColumnsInfo = entity.boardColumnInfo();
         try(var connection = getConnection()){
             new CardService(connection).cardCancel(cardId,cancelColumn.getId(),boardColumnsInfo);
             System.out.printf("Card %s cancelado com sucesso\n", cardId );
