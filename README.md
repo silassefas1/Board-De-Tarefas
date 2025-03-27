@@ -32,14 +32,27 @@ Este projeto visa gerenciar boards e cards, permitindo criar, atualizar, mover e
 - Java 11+
 - JDBC
 - Banco de Dados MySQL / DBeaver
-- Gradle 
-- Principais bibliotecas:
-  -Java Standard Library: Utilizada para funcionalidades básicas de linguagem e manipulação de dados.
-  -JDBC (Java Database Connectivity): Utilizada para conexão e manipulação de banco de dados SQL.
-  -Lombok: Utilizada para reduzir o código boilerplate, como getters, setters, construtores, etc.
-  -MySQL Connector/J: Driver JDBC para conectar o Java com o banco de dados MySQL.
+- Gradle
+ 
+## Principais Bibliotecas
 
-  
+- **Java Standard Library**: Utilizada para funcionalidades básicas de linguagem e manipulação de dados.  
+- **JDBC (Java Database Connectivity)**: Utilizada para conexão e manipulação de banco de dados SQL.  
+- **Lombok**: Utilizada para reduzir o código boilerplate, como getters, setters, construtores, etc.  
+- **MySQL Connector/J**: Driver JDBC para conectar o Java com o banco de dados MySQL.
+
+## Principais Conceitos da Programação Aplicados
+
+- **DAO (Data Access Object)**: Padrão de design que abstrai e encapsula o acesso ao banco de dados, fornecendo uma interface para realizar operações CRUD (Create, Read, Update, Delete).  
+- **DTO (Data Transfer Object)**: Objeto simples usado para transferir dados entre diferentes camadas da aplicação, sem lógica de negócios.  
+- **Entidade**: Representação de um objeto do mundo real no domínio da aplicação, geralmente mapeada para uma tabela no banco de dados.  
+- **Serviço**: Camada que contém a lógica de negócios da aplicação, orquestrando chamadas aos DAOs e outras operações necessárias.  
+- **Transações**: Uso de transações para garantir a consistência dos dados, com commit e rollback em caso de sucesso ou falha, respectivamente.  
+- **JDBC (Java Database Connectivity)**: API para conectar e executar operações no banco de dados a partir de uma aplicação Java.  
+- **Lombok**: Biblioteca que reduz o código boilerplate, gerando automaticamente métodos como getters, setters, construtores, etc.  
+- **SQL**: Linguagem usada para manipulação e consulta de dados no banco de dados.  
+- **Migrações**: Processo de versionamento e gerenciamento de alterações na estrutura do banco de dados, permitindo aplicar e reverter mudanças de forma controlada.
+ 
 
 ## Instalação e Execução ⚙️
 
