@@ -31,13 +31,12 @@ public class BoardMenu {
             System.out.println("4 - Desbloquear um Card");
             System.out.println("5 - Cancelar um Card");
             System.out.println("6 - Ver Board");
-            System.out.println("7 - Ver Coluna com Card");
+            System.out.println("7 - Ver Cards Por Coluna");
             System.out.println("8 - Ver Card");
             System.out.println("9 - Voltar Para o Menu Anterior");
             System.out.println("10 - Sair");
 
             option = scanner.nextInt();
-            scanner.nextLine();
             switch (option){
                 case 1 -> createCard();
                 case 2 -> moveCard();
@@ -45,7 +44,7 @@ public class BoardMenu {
                 case 4 -> unblockCard();
                 case 5 -> cancelCard();
                 case 6 -> showBoard();
-                case 7 -> showColumn();
+                case 7 -> showCardsFromColumn();
                 case 8 -> showCard();
                 case 9 -> System.out.println("Voltando Para o Menu Anterior");
                 case 10 -> System.exit(0);
@@ -65,7 +64,7 @@ public class BoardMenu {
         card.setBoardColumn(entity.getInitialColumn());
         try(var connection = getConnection()) {
             new CardService(connection).insert(card);
-
+            System.out.println("Card Bloqueado com Sucesso! ");
         }
 
     }
@@ -88,22 +87,37 @@ public class BoardMenu {
         scanner.nextLine();
         System.out.println("Informe o motivo do bloqueio do card: ");
         var reason = scanner.nextLine();
-        var boardColumnsInfo = entity.boardColumnInfo();
         try(var connection = getConnection()){
-            new CardService(connection).cardBlock(reason, cardId,boardColumnsInfo);
+            new CardService(connection).cardBlock(reason, cardId);
+            System.out.println("Card Bloqueado com sucesso! ");
+        }catch (RuntimeException exception){
+            System.out.println(exception.getMessage());
         }
     }
 
     private void unblockCard() throws SQLException{
+        System.out.println("Informe o id do card a ser desbloqueado: ");
+        var cardId = scanner.nextLong();
+        scanner.nextLine();
+        System.out.println("Informe o motivo do desbloqueio do card: ");
+        var reason = scanner.nextLine();
+        try(var connection = getConnection()){
+            new CardService(connection).cardUnblock(reason, cardId);
+            System.out.println("Card Desbloqueado com sucesso! ");
+        }catch (RuntimeException exception){
+            System.out.println(exception.getMessage());
+        }
     }
 
     private void cancelCard() throws SQLException{
         System.out.println("Informe o id do card que deseja cancelar: ");
         var cardId = scanner.nextLong();
+        System.out.println("Informe o motivo do cancelamento cancelar: ");
+        scanner.nextLine();
+        var cancelReason = scanner.nextLine();
         var cancelColumn = entity.getCancelColumn();
-        var boardColumnsInfo = entity.boardColumnInfo();
         try(var connection = getConnection()){
-            new CardService(connection).cardCancel(cardId,cancelColumn.getId(),boardColumnsInfo);
+            new CardService(connection).cardCancel(cardId,cancelColumn.getId(), cancelReason);
             System.out.printf("Card %s cancelado com sucesso\n", cardId );
         }catch (RuntimeException ex){
             System.out.println(ex.getMessage());
@@ -124,7 +138,7 @@ public class BoardMenu {
         }
     }
 
-    private void showColumn() throws SQLException {
+    private void showCardsFromColumn() throws SQLException {
         var columnsIds = entity.getBoardColumn().stream().map(BoardColumnEntity::getId).toList();
         var selectedColumn = -1L;
         while(!columnsIds.contains(selectedColumn)){
@@ -156,6 +170,9 @@ public class BoardMenu {
                         System.out.printf("Esta bloqueado? %s \nMotivo: %s\n",card.blocked(), card.blockReason());
                         System.out.printf("Bloqueado %s vezes\n", card.blockAmount() );
                         System.out.printf("Está no momento na coluna: %s - %s\n",card.columnId(),card.columnName());
+                        if(card.columnName().equals("Cancelado")){
+                            System.out.printf("Motivo do Cancelamento: %s\n", card.cancel_reason());
+                        }
                     },
                     ()->System.out.printf("Não existe um card com o id %s\n", selectedCardId));
         }

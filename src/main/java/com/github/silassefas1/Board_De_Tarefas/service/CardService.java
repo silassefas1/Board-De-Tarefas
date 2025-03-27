@@ -47,7 +47,7 @@ public class CardService {
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException("Não há uma próxima coluna disponível para mover o card."));
 
-            dao.moveToColumn(nextColumn.id(), cardId);
+            dao.moveToCancelColumn(nextColumn.id(), cardId);
             connection.commit();
         } catch (SQLException ex) {
             connection.rollback();
@@ -55,7 +55,7 @@ public class CardService {
         }
     }
 
-    public void cardCancel(final Long cardId, final Long cancelColumId, final List<BoardColumnInfoDTO> boardColumnsInfo) throws SQLException{
+    public void cardCancel(final Long cardId, final Long cancelColumId, final String cancelReason) throws SQLException{
         try{
             var dao = new CardDAO(connection);
             var cardEntity = new CardEntity();
@@ -63,8 +63,8 @@ public class CardService {
             var dto = optional.orElseThrow(
                     () -> new EntityNotFoundException("O Card de id %s não foi encontrado."
                             .formatted(cardId)));
-            cardEntity.verifyStatus(dto, boardColumnsInfo);
-            dao.moveToColumn(cancelColumId, cardId);
+            cardEntity.verifyStatus(dto);
+            dao.moveToCancelColumn(cancelColumId, cardId, cancelReason);
             connection.commit();
         }catch (SQLException ex) {
             connection.rollback();
@@ -72,22 +72,36 @@ public class CardService {
         }
     }
 
-    public void cardBlock(final String reason, final Long cardId, final List<BoardColumnInfoDTO> boardColumnsInfo) throws SQLException{
+    public void cardBlock(final String reason, final Long cardId) throws SQLException{
         var cardEntity = new CardEntity();
         try{
             var dao = new CardDAO(connection);
             var optional = dao.findById(cardId);
             var dto = optional.orElseThrow(
                     () -> new EntityNotFoundException("O Card de id %s não foi encontrado."));
-            cardEntity.verifyStatus(dto,boardColumnsInfo);
+            cardEntity.verifyStatus(dto);
             dao.cardBlock(reason,cardId);
             connection.commit();
         }catch (SQLException ex) {
             connection.rollback();
             throw new RuntimeException(ex);
         }
-
-
     }
 
+    public void cardUnblock(final String reason, final Long cardId) throws SQLException {
+        var cardEntity = new CardEntity();
+        try {
+            var dao = new CardDAO(connection);
+            var optional = dao.findById(cardId);
+            var dto = optional.orElseThrow(
+                    () -> new EntityNotFoundException("O Card de id %s não foi encontrado."));
+            cardEntity.verifyStatus(dto);
+            dao.cardUnblock(reason, cardId);
+            connection.commit();
+        } catch (SQLException ex) {
+            connection.rollback();
+            throw new RuntimeException(ex);
+        }
+    }
 }
+

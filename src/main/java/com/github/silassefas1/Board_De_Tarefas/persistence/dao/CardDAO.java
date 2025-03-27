@@ -10,8 +10,7 @@ import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 
-import static com.github.silassefas1.Board_De_Tarefas.persistence.converter.OffsetDateTimeConverter.toOffSetDateTime;
-import static com.github.silassefas1.Board_De_Tarefas.persistence.converter.OffsetDateTimeConverter.toTimeStamp;
+import static com.github.silassefas1.Board_De_Tarefas.persistence.converter.OffsetDateTimeConverter.*;
 import static java.util.Objects.nonNull;
 
 @AllArgsConstructor
@@ -34,7 +33,7 @@ public class CardDAO {
         return entity;
     }
 
-    public void moveToColumn(final Long columnId, final Long cardId) throws SQLException{
+    public void moveToCancelColumn(final Long columnId, final Long cardId) throws SQLException{
         var sql = "UPDATE CARDS SET board_column_id = ? WHERE id = ?;";
         try(var statement = connection.prepareStatement(sql)){
             var i = 1;
@@ -44,13 +43,36 @@ public class CardDAO {
         }
     }
 
+    public void moveToCancelColumn(final Long columnId, final Long cardId, final String cancelReason) throws SQLException{
+        var sql = "UPDATE CARDS SET board_column_id = ?, cancel_reason = ?  WHERE id = ?;";
+        try(var statement = connection.prepareStatement(sql)){
+            var i = 1;
+            statement.setLong(i ++, columnId);
+            statement.setString(i++,cancelReason);
+            statement.setLong(i, cardId);
+
+            statement.executeUpdate();
+        }
+    }
+
     public void cardBlock(final String reason, final Long cardId)throws SQLException {
         var sql = "INSERT INTO BLOCKS (blocked_at, blocked_reason, card_id) VALUES (?, ?, ?);";
         try(var statement = connection.prepareStatement(sql)){
             var i = 1;
-            statement.setTimestamp(i ++, toTimeStamp(OffsetDateTime.now()) );
+            statement.setTimestamp(i ++, toTimestamp(OffsetDateTime.now()) );
             statement.setString(i++, reason);
             statement.setLong(i,cardId);
+            statement.executeUpdate();
+        }
+    }
+
+    public void cardUnblock(final String reason, final Long cardId)throws SQLException{
+        var sql = "UPDATE BLOCKS SET unblocked_at = ?, unblocked_reason = ? WHERE card_id = ? AND unblocked_reason IS NULL;";
+        try(var statement = connection.prepareStatement(sql)){
+            var i = 1;
+            statement.setTimestamp(i ++, toTimestamp(OffsetDateTime.now()));
+            statement.setString(i ++, reason);
+            statement.setLong(i, cardId);
             statement.executeUpdate();
         }
     }
@@ -63,6 +85,7 @@ public class CardDAO {
                 SELECT card.id,
                        card.title,
                        card.description,
+                       card.cancel_reason,
                        blocks.blocked_at,
                        blocks.blocked_reason,
                        card.board_column_id,
@@ -87,6 +110,7 @@ public class CardDAO {
                         resultSet.getLong("card.id"),
                         resultSet.getString("card.title"),
                         resultSet.getString("card.description"),
+                        resultSet.getString("card.cancel_reason"),
                         nonNull(resultSet.getString("blocks.blocked_reason")),
                         toOffSetDateTime(resultSet.getTimestamp("blocks.blocked_at")),
                         resultSet.getString("blocks.blocked_reason"),

@@ -5,6 +5,7 @@ import java.time.OffsetDateTime;
 public record CardDetailsDTO(Long id,
                                 String title,
                                 String description,
+                                String cancel_reason,
                                 boolean blocked,
                                 OffsetDateTime blockedAt,
                                 String blockReason,
